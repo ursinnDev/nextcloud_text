@@ -105,6 +105,25 @@ describe('Workspace', function() {
 		})
 	})
 
+	it('creates lists', function() {
+		openWorkspace()
+			.type('List me')
+			.type('{selectall}')
+		;[
+			['ul', 'ul'],
+			['ol', 'ol'],
+			['checkmark', 'ul[data-type="taskList"]'],
+		].forEach(([button, tag]) => {
+			menuButton(button)
+				.click()
+				.should('have.class', 'is-active')
+			cy.get(`.ProseMirror ${tag}`).should('contain', 'List me')
+			menuButton(button)
+				.click()
+				.should('not.have.class', 'is-active')
+		})
+	})
+
 })
 
 const menuButton = (name) => {
