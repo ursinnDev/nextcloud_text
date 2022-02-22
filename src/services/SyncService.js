@@ -86,6 +86,7 @@ class SyncService {
 
 		this.document = null
 		this.session = null
+		this.data = null
 		this.sessions = []
 
 		this.steps = []
@@ -123,11 +124,38 @@ class SyncService {
 			session: this.session,
 		})
 		return this._fetchDocument().then(({ data }) => {
+			this.data = data
 			this.emit('loaded', {
 				document: this.document,
 				session: this.session,
 				documentSource: '' + data,
 			})
+		})
+	}
+
+	getSession() {
+		return new Promise((resolve, reject) => {
+			if (this.document && this.session) {
+				resolve({ document: this.document, session: this.session })
+			} else {
+				this.on('opened', resolve)
+				this.on('error', reject)
+			}
+		})
+	}
+
+	getContent() {
+		return new Promise((resolve, reject) => {
+			if (this.document && this.session && this.data) {
+				resolve({
+					document: this.document,
+					session: this.session,
+					documentSource: this.data,
+				})
+			} else {
+				this.on('loaded', resolve)
+				this.on('error', reject)
+			}
 		})
 	}
 

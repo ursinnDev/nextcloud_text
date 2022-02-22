@@ -31,22 +31,27 @@
 		<EditorWrapper v-if="file"
 			v-show="ready"
 			:key="file.path"
-			:file-id="file.id"
+			:sync-service="syncService"
 			:relative-path="file.path"
-			:share-token="shareToken"
 			:active="true"
 			:autohide="true"
 			:mime="file.mimetype"
 			:autofocus="autofocus"
+			:state.sync="syncService.state"
+			:serialize.sync="serialize"
 			@ready="ready=true; loaded=true"
 			@focus="focus=true"
 			@blur="unfocus"
-			@error="reset" />
+			@error="reset"
+			@close="syncService = null"
+			@reconnect="reconnect" />
 	</div>
 </template>
 
 <script>
 import { subscribe } from '@nextcloud/event-bus'
+import { getRandomGuestName } from './../helpers'
+import { SyncService } from './../services/SyncService'
 
 export default {
 	name: 'RichWorkspace',
@@ -71,6 +76,9 @@ export default {
 			autofocus: false,
 			darkTheme: OCA.Accessibility && OCA.Accessibility.theme === 'dark',
 			enabled: OCA.Text.RichWorkspaceEnabled,
+			/** @type {SyncService} */
+			syncService: null,
+			serialize: null,
 		}
 	},
 	computed: {
@@ -90,6 +98,12 @@ export default {
 				document.querySelector('#editor').scrollTo(0, 0)
 			}
 		},
+		file(file) {
+			if (file) {
+				this.initSession()
+			}
+		},
+
 	},
 	async mounted() {
 		subscribe('Text::showRichWorkspace', () => {
@@ -119,6 +133,27 @@ export default {
 				window.FileList.createFile('Readme.md', { scrollTo: false, animate: false })
 			}
 		},
+		reconnect() {
+			this.syncService = null
+			this.initSession()
+		},
+		initSession() {
+			const guestName = localStorage.getItem('nick') || getRandomGuestName()
+			this.syncService = new SyncService({
+				shareToken: this.shareToken,
+				filePath: this.relativePath,
+				guestName,
+				forceRecreate: this.forceRecreate,
+				serialize: this.serialize,
+			})
+			this.syncService.open({
+				fileId: this.file.id,
+				filePath: this.file.path,
+			}).catch((e) => {
+				this.hasConnectionIssue = true
+			})
+		},
+
 	},
 }
 </script>

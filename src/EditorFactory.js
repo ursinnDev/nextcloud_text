@@ -110,9 +110,7 @@ const SerializeException = function(message) {
 	this.message = message
 }
 
-const serializePlainText = (tiptap) => {
-	const doc = tiptap.getJSON()
-
+const serializePlainText = (doc) => {
 	if (doc.content.length !== 1 || typeof doc.content[0].content === 'undefined' || doc.content[0].content.length !== 1) {
 		if (doc.content[0].type === 'code_block' && typeof doc.content[0].content === 'undefined') {
 			return ''

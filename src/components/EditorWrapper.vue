@@ -40,7 +40,6 @@
 					:editor="tiptap"
 					:sync-service="syncService"
 					:file-path="relativePath"
-					:file-id="fileId"
 					:is-rich-editor="isRichEditor"
 					:is-public="isPublic"
 					:autohide="autohide"
@@ -81,7 +80,6 @@ import escapeHtml from 'escape-html'
 import moment from '@nextcloud/moment'
 
 import { SyncService, ERROR_TYPE, IDLE_TIMEOUT } from './../services/SyncService'
-import { endpointUrl, getRandomGuestName } from './../helpers'
 import { extensionHighlight } from '../helpers/mappings'
 import { createEditor, serializePlainText, loadSyntaxHighlight } from './../EditorFactory'
 import { createMarkdownSerializer } from './../extensions/Markdown'
@@ -117,17 +115,9 @@ export default {
 		store,
 	],
 	props: {
-		initialSession: {
-			type: Object,
-			default: null,
-		},
 		relativePath: {
 			type: String,
 			default: '',
-		},
-		fileId: {
-			type: Number,
-			default: null,
 		},
 		active: {
 			type: Boolean,
@@ -136,10 +126,6 @@ export default {
 		autofocus: {
 			type: Boolean,
 			default: true,
-		},
-		shareToken: {
-			type: String,
-			default: null,
 		},
 		mime: {
 			type: String,
@@ -153,14 +139,16 @@ export default {
 			type: Boolean,
 			default: false,
 		},
+		syncService: {
+			type: SyncService,
+			default: null,
+		},
 	},
 	data() {
 		return {
 			IDLE_TIMEOUT,
 
 			tiptap: null,
-			/** @type {SyncService} */
-			syncService: null,
 
 			document: null,
 			sessions: [],
@@ -217,14 +205,6 @@ export default {
 		hasUnsavedChanges() {
 			return this.document && this.document.lastSavedVersion < this.document.currentVersion
 		},
-		backendUrl() {
-			return (endpoint) => {
-				return endpointUrl(endpoint, !!this.shareToken)
-			}
-		},
-		hasDocumentParameters() {
-			return this.fileId || this.shareToken || this.initialSession
-		},
 		isPublic() {
 			return this.isDirectEditing || (document.getElementById('isPublic') && document.getElementById('isPublic').value === '1')
 		},
@@ -254,7 +234,7 @@ export default {
 		},
 	},
 	mounted() {
-		if (this.active && (this.hasDocumentParameters)) {
+		if (this.active) {
 			this.initSession()
 		}
 		this.$parent.$emit('update:loaded', true)
@@ -274,7 +254,7 @@ export default {
 				try {
 					await this.syncService.close()
 					this.currentSession = null
-					this.syncService = null
+					this.$emit('close')
 				} catch (e) {
 					// Ignore issues closing the session since those might happen due to network issues
 				}
@@ -286,189 +266,168 @@ export default {
 				this.lastSavedString = moment(this.document.lastSavedVersionTime * 1000).fromNow()
 			}
 		},
-		initSession() {
-			if (!this.hasDocumentParameters) {
-				this.$parent.$emit('error', 'No valid file provided')
-				return
-			}
-			const guestName = localStorage.getItem('nick') ? localStorage.getItem('nick') : getRandomGuestName()
-			this.syncService = new SyncService({
-				shareToken: this.shareToken,
-				filePath: this.relativePath,
-				guestName,
-				forceRecreate: this.forceRecreate,
-				serialize: (document) => {
-					if (this.isRichEditor) {
-						return (createMarkdownSerializer(this.tiptap.schema)).serialize(document)
-					}
-					return serializePlainText(this.tiptap)
-
-				},
+		async initSession() {
+			this.syncService.on('change', ({ document, sessions }) => {
+				if (this.document.baseVersionEtag !== '' && document.baseVersionEtag !== this.document.baseVersionEtag) {
+					this.resolveUseServerVersion()
+					return
+				}
+				this.updateSessions.bind(this)(sessions)
+				this.document = document
+				this.syncError = null
+				this.tiptap.setOptions({ editable: !this.readOnly })
 			})
-				.on('opened', ({ document, session }) => {
-					this.currentSession = session
-					this.document = document
-					this.readOnly = document.readOnly
-					localStorage.setItem('nick', this.currentSession.guestName)
-					this.$store.dispatch('setCurrentSession', this.currentSession)
-				})
-				.on('change', ({ document, sessions }) => {
-					if (this.document.baseVersionEtag !== '' && document.baseVersionEtag !== this.document.baseVersionEtag) {
-						this.resolveUseServerVersion()
-						return
-					}
-					this.updateSessions.bind(this)(sessions)
-					this.document = document
 
-					this.syncError = null
-					this.tiptap.setOptions({ editable: !this.readOnly })
-				})
-				.on('loaded', ({ documentSource }) => {
-					this.hasConnectionIssue = false
-					const content = this.isRichEditor
-						? markdownit.render(documentSource)
-						: '<pre>' + escapeHtml(documentSource) + '</pre>'
-					const language = extensionHighlight[this.fileExtension] || this.fileExtension
-					loadSyntaxHighlight(language).then(() => {
-						this.tiptap = createEditor({
-							content,
-							onCreate: ({ editor }) => {
-								this.syncService.state = editor.state
-								this.syncService.startSync()
-							},
-							onUpdate: ({ editor }) => {
-								this.syncService.state = editor.state
-							},
-							extensions: [
-								Collaboration.configure({
-									// the initial version we start with
-									// version is an integer which is incremented with every change
-									version: this.document.initialVersion,
-									clientID: this.currentSession.id,
-									// debounce changes so we can save some bandwidth
-									debounce: EDITOR_PUSH_DEBOUNCE,
-									onSendable: ({ sendable }) => {
-										if (this.syncService) {
-											this.syncService.sendSteps()
-										}
-									},
-									update: ({ steps, version, editor }) => {
-										const { state, view, schema } = editor
-										if (getVersion(state) > version) {
-											return
-										}
-										const tr = receiveTransaction(
-											state,
-											steps.map(item => Step.fromJSON(schema, item.step)),
-											steps.map(item => item.clientID),
-										)
-										tr.setMeta('clientID', steps.map(item => item.clientID))
-										view.dispatch(tr)
-									},
-								}),
-								Keymap.configure({
-									'Mod-s': () => {
-										this.syncService.save()
-										return true
-									},
-								}),
-								UserColor.configure({
-									clientID: this.currentSession.id,
-									color: (clientID) => {
-										const session = this.sessions.find(item => '' + item.id === '' + clientID)
-										return session?.color
-									},
-									name: (clientID) => {
-										const session = this.sessions.find(item => '' + item.id === '' + clientID)
-										return session?.userId ? session.userId : session?.guestName
-									},
-								}),
-							],
-							enableRichEditing: this.isRichEditor,
-							currentDirectory: this.currentDirectory,
-						})
-						this.tiptap.on('focus', () => {
-							this.$emit('focus')
-						})
-						this.tiptap.on('blur', () => {
-							this.$emit('blur')
-						})
-						this.syncService.state = this.tiptap.state
+			this.syncService.on('sync', ({ steps, document }) => {
+				this.hasConnectionIssue = false
+				try {
+					const collaboration = this.tiptap.extensionManager.extensions.find(e => e.name === 'collaboration')
+					collaboration.options.update({
+						version: document.currentVersion,
+						steps,
+						editor: this.tiptap,
 					})
-				})
-				.on('sync', ({ steps, document }) => {
-					this.hasConnectionIssue = false
-					try {
-						const collaboration = this.tiptap.extensionManager.extensions.find(e => e.name === 'collaboration')
-						collaboration.options.update({
-							version: document.currentVersion,
-							steps,
-							editor: this.tiptap,
-						})
-						this.syncService.state = this.tiptap.state
-						this.updateLastSavedStatus()
-					} catch (e) {
-						console.error('Failed to update steps in collaboration plugin', e)
-						// TODO: we should recreate the editing session when this happens
+					this.$emit('update:state', this.tiptap.state)
+					this.updateLastSavedStatus()
+				} catch (e) {
+					console.error('Failed to update steps in collaboration plugin', e)
+					// TODO: we should recreate the editing session when this happens
+				}
+				this.document = document
+			})
+
+			this.syncService.on('error', (error, data) => {
+				this.tiptap.setOptions({ editable: false })
+				if (error === ERROR_TYPE.SAVE_COLLISSION && (!this.syncError || this.syncError.type !== ERROR_TYPE.SAVE_COLLISSION)) {
+					this.initialLoading = true
+					this.syncError = {
+						type: error,
+						data,
 					}
-					this.document = document
-				})
-				.on('error', (error, data) => {
-					this.tiptap.setOptions({ editable: false })
-					if (error === ERROR_TYPE.SAVE_COLLISSION && (!this.syncError || this.syncError.type !== ERROR_TYPE.SAVE_COLLISSION)) {
-						this.initialLoading = true
-						this.syncError = {
-							type: error,
-							data,
-						}
+				}
+				if (error === ERROR_TYPE.CONNECTION_FAILED && !this.hasConnectionIssue) {
+					this.hasConnectionIssue = true
+					// FIXME: ideally we just try to reconnect in the service, so we don't loose steps
+					OC.Notification.showTemporary('Connection failed, reconnecting')
+					if (data.retry !== false) {
+						setTimeout(this.reconnect.bind(this), 5000)
 					}
-					if (error === ERROR_TYPE.CONNECTION_FAILED && !this.hasConnectionIssue) {
-						this.hasConnectionIssue = true
-						// FIXME: ideally we just try to reconnect in the service, so we don't loose steps
-						OC.Notification.showTemporary('Connection failed, reconnecting')
-						if (data.retry !== false) {
-							setTimeout(this.reconnect.bind(this), 5000)
-						}
-					}
-					if (error === ERROR_TYPE.SOURCE_NOT_FOUND) {
-						this.hasConnectionIssue = true
+				}
+				if (error === ERROR_TYPE.SOURCE_NOT_FOUND) {
+					this.hasConnectionIssue = true
+				}
+				this.$emit('ready')
+			})
+
+			this.syncService.on('stateChange', (state) => {
+				if (state.initialLoading && !this.initialLoading) {
+					this.initialLoading = true
+					if (this.autofocus) {
+						this.tiptap.commands.focus()
 					}
 					this.$emit('ready')
-				})
-				.on('stateChange', (state) => {
-					if (state.initialLoading && !this.initialLoading) {
-						this.initialLoading = true
-						if (this.autofocus) {
-							this.tiptap.commands.focus()
-						}
-						this.$emit('ready')
-						this.$parent.$emit('ready', true)
-					}
-					if (Object.prototype.hasOwnProperty.call(state, 'dirty')) {
-						this.dirty = state.dirty
-					}
-				})
-				.on('idle', () => {
-					this.syncService.close()
-					this.idle = true
-					this.readOnly = true
-					this.tiptap.setOptions({ editable: !this.readOnly })
-				})
-			if (this.initialSession === null) {
-				this.syncService.open({
-					fileId: this.fileId,
-					filePath: this.relativePath,
-				}).catch((e) => {
-					this.hasConnectionIssue = true
-				})
-			} else {
-				this.syncService.open({
-					initialSession: this.initialSession,
-				}).catch((e) => {
-					this.hasConnectionIssue = true
-				})
+					this.$parent.$emit('ready', true)
+				}
+				if (Object.prototype.hasOwnProperty.call(state, 'dirty')) {
+					this.dirty = state.dirty
+				}
+			})
+
+			this.syncService.on('idle', () => {
+				this.syncService.close()
+				this.idle = true
+				this.readOnly = true
+				this.tiptap.setOptions({ editable: !this.readOnly })
+			})
+
+			const { document, session } = await this.syncService.getSession()
+			this.currentSession = session
+			this.document = document
+			this.readOnly = document.readOnly
+			localStorage.setItem('nick', this.currentSession.guestName)
+			this.$store.dispatch('setCurrentSession', this.currentSession)
+
+			const { documentSource } = await this.syncService.getContent()
+			this.hasConnectionIssue = false
+			const content = this.isRichEditor
+				? markdownit.render(documentSource)
+				: '<pre>' + escapeHtml(documentSource) + '</pre>'
+			if (!this.isRichEditor) {
+				const language = extensionHighlight[this.fileExtension] || this.fileExtension
+				await loadSyntaxHighlight(language)
 			}
-			this.forceRecreate = false
+
+			this.tiptap = createEditor({
+				content,
+				onCreate: ({ editor }) => {
+					this.$emit('update:state', editor.state)
+					this.syncService.startSync()
+				},
+				onUpdate: ({ editor }) => {
+					this.$emit('update:state', editor.state)
+				},
+				extensions: [
+					Collaboration.configure({
+						// the initial version we start with
+						// version is an integer which is incremented with every change
+						version: this.document.initialVersion,
+						clientID: this.currentSession.id,
+						// debounce changes so we can save some bandwidth
+						debounce: EDITOR_PUSH_DEBOUNCE,
+						onSendable: ({ sendable }) => {
+							if (this.syncService) {
+								this.syncService.sendSteps()
+							}
+						},
+						update: ({ steps, version, editor }) => {
+							const { state, view, schema } = editor
+							if (getVersion(state) > version) {
+								return
+							}
+							const tr = receiveTransaction(
+								state,
+								steps.map(item => Step.fromJSON(schema, item.step)),
+								steps.map(item => item.clientID),
+							)
+							tr.setMeta('clientID', steps.map(item => item.clientID))
+							view.dispatch(tr)
+						},
+					}),
+					Keymap.configure({
+						'Mod-s': () => {
+							this.syncService.save()
+							return true
+						},
+					}),
+					UserColor.configure({
+						clientID: this.currentSession.id,
+						color: (clientID) => {
+							const session = this.sessions.find(item => '' + item.id === '' + clientID)
+							return session?.color
+						},
+						name: (clientID) => {
+							const session = this.sessions.find(item => '' + item.id === '' + clientID)
+							return session?.userId ? session.userId : session?.guestName
+						},
+					}),
+				],
+				enableRichEditing: this.isRichEditor,
+				currentDirectory: this.currentDirectory,
+			})
+			const serialize = (doc) => {
+				if (this.isRichEditor) {
+					return (createMarkdownSerializer(this.schema)).serialize(doc)
+				}
+				return serializePlainText(doc.toJSON())
+			}
+			this.$emit('update:serialize', serialize)
+			this.tiptap.on('focus', () => {
+				this.$emit('focus')
+			})
+			this.tiptap.on('blur', () => {
+				this.$emit('blur')
+			})
+			this.$emit('update:state', this.tiptap.state)
 		},
 
 		resolveUseThisVersion() {
@@ -486,16 +445,14 @@ export default {
 			this.hasConnectionIssue = false
 			if (this.syncService) {
 				this.syncService.close().then(() => {
-					this.syncService = null
 					this.tiptap.destroy()
-					this.initSession()
+					this.$emit('reconnect')
 				}).catch((e) => {
 					// Ignore issues closing the session since those might happen due to network issues
 				})
 			} else {
-				this.syncService = null
 				this.tiptap.destroy()
-				this.initSession()
+				this.$emit('reconnect')
 			}
 			this.idle = false
 		},
