@@ -1,2 +1,51 @@
-(self.webpackChunktext=self.webpackChunktext||[]).push([["highlight/fix"],{51377:e=>{e.exports=function(e){return{name:"FIX",contains:[{begin:/[^\u2401\u0001]+/,end:/[\u2401\u0001]/,excludeEnd:!0,returnBegin:!0,returnEnd:!1,contains:[{begin:/([^\u2401\u0001=]+)/,end:/=([^\u2401\u0001=]+)/,returnEnd:!0,returnBegin:!1,className:"attr"},{begin:/=/,end:/([\u2401\u0001])/,excludeEnd:!0,excludeBegin:!0,className:"string"}]}],case_insensitive:!0}}}}]);
-//# sourceMappingURL=fix.js.map?v=a58bf72a76dd36096535
+(self["webpackChunktext"] = self["webpackChunktext"] || []).push([["highlight/fix"],{
+
+/***/ "./node_modules/highlight.js/lib/languages/fix.js":
+/*!********************************************************!*\
+  !*** ./node_modules/highlight.js/lib/languages/fix.js ***!
+  \********************************************************/
+/***/ ((module) => {
+
+/*
+Language: FIX
+Author: Brent Bradbury <brent@brentium.com>
+*/
+
+/** @type LanguageFn */
+function fix(hljs) {
+  return {
+    name: 'FIX',
+    contains: [{
+      begin: /[^\u2401\u0001]+/,
+      end: /[\u2401\u0001]/,
+      excludeEnd: true,
+      returnBegin: true,
+      returnEnd: false,
+      contains: [
+        {
+          begin: /([^\u2401\u0001=]+)/,
+          end: /=([^\u2401\u0001=]+)/,
+          returnEnd: true,
+          returnBegin: false,
+          className: 'attr'
+        },
+        {
+          begin: /=/,
+          end: /([\u2401\u0001])/,
+          excludeEnd: true,
+          excludeBegin: true,
+          className: 'string'
+        }
+      ]
+    }],
+    case_insensitive: true
+  };
+}
+
+module.exports = fix;
+
+
+/***/ })
+
+}]);
+//# sourceMappingURL=fix.js.map?v=0ae857c0b27590db73d5

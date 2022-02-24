@@ -21,7 +21,7 @@
   -->
 
 <template>
-	<div v-if="enabled" id="rich-workspace" :class="{'icon-loading': !loaded || !ready, 'focus': focus, 'dark': darkTheme, 'creatable': canCreate}">
+	<div v-if="enabled" id="rich-workspace" :class="{'icon-loading': file && (!loaded || !ready), 'focus': focus, 'dark': darkTheme, 'creatable': canCreate}">
 		<div v-if="showEmptyWorkspace" class="empty-workspace" @click="createNew">
 			<p class="placeholder">
 				{{ t('text', 'Add notes, lists or links …') }}

@@ -109,7 +109,8 @@ class ApiService {
 		return new DataResponse([
 			'document' => $document,
 			'session' => $session,
-			'readOnly' => $readOnly
+			'readOnly' => $readOnly,
+			'content' => $file->getContent()
 		]);
 	}
 

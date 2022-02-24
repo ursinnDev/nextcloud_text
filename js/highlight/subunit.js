@@ -1,2 +1,65 @@
-(self.webpackChunktext=self.webpackChunktext||[]).push([["highlight/subunit"],{36886:s=>{s.exports=function(s){return{name:"SubUnit",case_insensitive:!0,contains:[{className:"string",begin:"\\[\n(multipart)?",end:"\\]\n"},{className:"string",begin:"\\d{4}-\\d{2}-\\d{2}(\\s+)\\d{2}:\\d{2}:\\d{2}.\\d+Z"},{className:"string",begin:"(\\+|-)\\d+"},{className:"keyword",relevance:10,variants:[{begin:"^(test|testing|success|successful|failure|error|skip|xfail|uxsuccess)(:?)\\s+(test)?"},{begin:"^progress(:?)(\\s+)?(pop|push)?"},{begin:"^tags:"},{begin:"^time:"}]}]}}}}]);
-//# sourceMappingURL=subunit.js.map?v=1c91062ed95108be43ce
+(self["webpackChunktext"] = self["webpackChunktext"] || []).push([["highlight/subunit"],{
+
+/***/ "./node_modules/highlight.js/lib/languages/subunit.js":
+/*!************************************************************!*\
+  !*** ./node_modules/highlight.js/lib/languages/subunit.js ***!
+  \************************************************************/
+/***/ ((module) => {
+
+/*
+Language: SubUnit
+Author: Sergey Bronnikov <sergeyb@bronevichok.ru>
+Website: https://pypi.org/project/python-subunit/
+*/
+
+function subunit(hljs) {
+  const DETAILS = {
+    className: 'string',
+    begin: '\\[\n(multipart)?',
+    end: '\\]\n'
+  };
+  const TIME = {
+    className: 'string',
+    begin: '\\d{4}-\\d{2}-\\d{2}(\\s+)\\d{2}:\\d{2}:\\d{2}\.\\d+Z'
+  };
+  const PROGRESSVALUE = {
+    className: 'string',
+    begin: '(\\+|-)\\d+'
+  };
+  const KEYWORDS = {
+    className: 'keyword',
+    relevance: 10,
+    variants: [
+      {
+        begin: '^(test|testing|success|successful|failure|error|skip|xfail|uxsuccess)(:?)\\s+(test)?'
+      },
+      {
+        begin: '^progress(:?)(\\s+)?(pop|push)?'
+      },
+      {
+        begin: '^tags:'
+      },
+      {
+        begin: '^time:'
+      }
+    ]
+  };
+  return {
+    name: 'SubUnit',
+    case_insensitive: true,
+    contains: [
+      DETAILS,
+      TIME,
+      PROGRESSVALUE,
+      KEYWORDS
+    ]
+  };
+}
+
+module.exports = subunit;
+
+
+/***/ })
+
+}]);
+//# sourceMappingURL=subunit.js.map?v=e59f6f8a81aff7d3eebd

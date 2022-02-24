@@ -1,2 +1,63 @@
-(self.webpackChunktext=self.webpackChunktext||[]).push([["highlight/gherkin"],{65962:e=>{e.exports=function(e){return{name:"Gherkin",aliases:["feature"],keywords:"Feature Background Ability Business Need Scenario Scenarios Scenario Outline Scenario Template Examples Given And Then But When",contains:[{className:"symbol",begin:"\\*",relevance:0},{className:"meta",begin:"@[^@\\s]+"},{begin:"\\|",end:"\\|\\w*$",contains:[{className:"string",begin:"[^|]+"}]},{className:"variable",begin:"<",end:">"},e.HASH_COMMENT_MODE,{className:"string",begin:'"""',end:'"""'},e.QUOTE_STRING_MODE]}}}}]);
-//# sourceMappingURL=gherkin.js.map?v=e38af5e245f90e6dc0bc
+(self["webpackChunktext"] = self["webpackChunktext"] || []).push([["highlight/gherkin"],{
+
+/***/ "./node_modules/highlight.js/lib/languages/gherkin.js":
+/*!************************************************************!*\
+  !*** ./node_modules/highlight.js/lib/languages/gherkin.js ***!
+  \************************************************************/
+/***/ ((module) => {
+
+/*
+ Language: Gherkin
+ Author: Sam Pikesley (@pikesley) <sam.pikesley@theodi.org>
+ Description: Gherkin is the format for cucumber specifications. It is a domain specific language which helps you to describe business behavior without the need to go into detail of implementation.
+ Website: https://cucumber.io/docs/gherkin/
+ */
+
+function gherkin(hljs) {
+  return {
+    name: 'Gherkin',
+    aliases: ['feature'],
+    keywords: 'Feature Background Ability Business\ Need Scenario Scenarios Scenario\ Outline Scenario\ Template Examples Given And Then But When',
+    contains: [
+      {
+        className: 'symbol',
+        begin: '\\*',
+        relevance: 0
+      },
+      {
+        className: 'meta',
+        begin: '@[^@\\s]+'
+      },
+      {
+        begin: '\\|',
+        end: '\\|\\w*$',
+        contains: [
+          {
+            className: 'string',
+            begin: '[^|]+'
+          }
+        ]
+      },
+      {
+        className: 'variable',
+        begin: '<',
+        end: '>'
+      },
+      hljs.HASH_COMMENT_MODE,
+      {
+        className: 'string',
+        begin: '"""',
+        end: '"""'
+      },
+      hljs.QUOTE_STRING_MODE
+    ]
+  };
+}
+
+module.exports = gherkin;
+
+
+/***/ })
+
+}]);
+//# sourceMappingURL=gherkin.js.map?v=86dfac4275354cde67ea

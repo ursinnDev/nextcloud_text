@@ -112,24 +112,26 @@ class SyncService {
 				throw error
 			}
 		} else {
-			connectionData = initialSession
+			const content = await this._fetchDocument()
+			connectionData = {
+				...initialSession,
+				content,
+			}
 		}
 
 		this.document = connectionData.document
 		this.document.readOnly = connectionData.readOnly
 		this.session = connectionData.session
+		this.data = connectionData.content
 
 		this.emit('opened', {
 			document: this.document,
 			session: this.session,
 		})
-		return this._fetchDocument().then(({ data }) => {
-			this.data = data
-			this.emit('loaded', {
-				document: this.document,
-				session: this.session,
-				documentSource: '' + data,
-			})
+		this.emit('loaded', {
+			document: this.document,
+			session: this.session,
+			documentSource: '' + this.data,
 		})
 	}
 

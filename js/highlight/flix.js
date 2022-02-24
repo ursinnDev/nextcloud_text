@@ -1,2 +1,68 @@
-(self.webpackChunktext=self.webpackChunktext||[]).push([["highlight/flix"],{72041:e=>{e.exports=function(e){const n={className:"function",beginKeywords:"def",end:/[:={\[(\n;]/,excludeEnd:!0,contains:[{className:"title",relevance:0,begin:/[^0-9\n\t "'(),.`{}\[\]:;][^\n\t "'(),.`{}\[\]:;]+|[^0-9\n\t "'(),.`{}\[\]:;=]/}]};return{name:"Flix",keywords:{literal:"true false",keyword:"case class def else enum if impl import in lat rel index let match namespace switch type yield with"},contains:[e.C_LINE_COMMENT_MODE,e.C_BLOCK_COMMENT_MODE,{className:"string",begin:/'(.|\\[xXuU][a-zA-Z0-9]+)'/},{className:"string",variants:[{begin:'"',end:'"'}]},n,e.C_NUMBER_MODE]}}}}]);
-//# sourceMappingURL=flix.js.map?v=4e8e319f3cf77a282270
+(self["webpackChunktext"] = self["webpackChunktext"] || []).push([["highlight/flix"],{
+
+/***/ "./node_modules/highlight.js/lib/languages/flix.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/highlight.js/lib/languages/flix.js ***!
+  \*********************************************************/
+/***/ ((module) => {
+
+/*
+ Language: Flix
+ Category: functional
+ Author: Magnus Madsen <mmadsen@uwaterloo.ca>
+ Website: https://flix.dev/
+ */
+
+ /** @type LanguageFn */
+function flix(hljs) {
+  const CHAR = {
+    className: 'string',
+    begin: /'(.|\\[xXuU][a-zA-Z0-9]+)'/
+  };
+
+  const STRING = {
+    className: 'string',
+    variants: [{
+      begin: '"',
+      end: '"'
+    }]
+  };
+
+  const NAME = {
+    className: 'title',
+    relevance: 0,
+    begin: /[^0-9\n\t "'(),.`{}\[\]:;][^\n\t "'(),.`{}\[\]:;]+|[^0-9\n\t "'(),.`{}\[\]:;=]/
+  };
+
+  const METHOD = {
+    className: 'function',
+    beginKeywords: 'def',
+    end: /[:={\[(\n;]/,
+    excludeEnd: true,
+    contains: [NAME]
+  };
+
+  return {
+    name: 'Flix',
+    keywords: {
+      literal: 'true false',
+      keyword: 'case class def else enum if impl import in lat rel index let match namespace switch type yield with'
+    },
+    contains: [
+      hljs.C_LINE_COMMENT_MODE,
+      hljs.C_BLOCK_COMMENT_MODE,
+      CHAR,
+      STRING,
+      METHOD,
+      hljs.C_NUMBER_MODE
+    ]
+  };
+}
+
+module.exports = flix;
+
+
+/***/ })
+
+}]);
+//# sourceMappingURL=flix.js.map?v=1751bc103ebb26c38333

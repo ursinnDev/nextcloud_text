@@ -1,2 +1,51 @@
-(self.webpackChunktext=self.webpackChunktext||[]).push([["highlight/node-repl"],{93668:e=>{e.exports=function(e){return{name:"Node REPL",contains:[{className:"meta",starts:{end:/ |$/,starts:{end:"$",subLanguage:"javascript"}},variants:[{begin:/^>(?=[ ]|$)/},{begin:/^\.\.\.(?=[ ]|$)/}]}]}}}}]);
-//# sourceMappingURL=node-repl.js.map?v=0c3e792799f7ae02c87c
+(self["webpackChunktext"] = self["webpackChunktext"] || []).push([["highlight/node-repl"],{
+
+/***/ "./node_modules/highlight.js/lib/languages/node-repl.js":
+/*!**************************************************************!*\
+  !*** ./node_modules/highlight.js/lib/languages/node-repl.js ***!
+  \**************************************************************/
+/***/ ((module) => {
+
+/*
+Language: Node REPL
+Requires: javascript.js
+Author: Marat Nagayev <nagaevmt@yandex.ru>
+Category: scripting
+*/
+
+/** @type LanguageFn */
+function nodeRepl(hljs) {
+  return {
+    name: 'Node REPL',
+    contains: [
+      {
+        className: 'meta',
+        starts: {
+          // a space separates the REPL prefix from the actual code
+          // this is purely for cleaner HTML output
+          end: / |$/,
+          starts: {
+            end: '$',
+            subLanguage: 'javascript'
+          }
+        },
+        variants: [
+          {
+            begin: /^>(?=[ ]|$)/
+          },
+          {
+            begin: /^\.\.\.(?=[ ]|$)/
+          }
+        ]
+      }
+    ]
+  };
+}
+
+module.exports = nodeRepl;
+
+
+/***/ })
+
+}]);
+//# sourceMappingURL=node-repl.js.map?v=d443926394489a675479

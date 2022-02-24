@@ -1,2 +1,60 @@
-(self.webpackChunktext=self.webpackChunktext||[]).push([["highlight/brainfuck"],{44536:e=>{e.exports=function(e){const n={className:"literal",begin:/[+-]/,relevance:0};return{name:"Brainfuck",aliases:["bf"],contains:[e.COMMENT("[^\\[\\]\\.,\\+\\-<> \r\n]","[\\[\\]\\.,\\+\\-<> \r\n]",{returnEnd:!0,relevance:0}),{className:"title",begin:"[\\[\\]]",relevance:0},{className:"string",begin:"[\\.,]",relevance:0},{begin:/(?:\+\+|--)/,contains:[n]},n]}}}}]);
-//# sourceMappingURL=brainfuck.js.map?v=a203c6a271e0771d3071
+(self["webpackChunktext"] = self["webpackChunktext"] || []).push([["highlight/brainfuck"],{
+
+/***/ "./node_modules/highlight.js/lib/languages/brainfuck.js":
+/*!**************************************************************!*\
+  !*** ./node_modules/highlight.js/lib/languages/brainfuck.js ***!
+  \**************************************************************/
+/***/ ((module) => {
+
+/*
+Language: Brainfuck
+Author: Evgeny Stepanischev <imbolk@gmail.com>
+Website: https://esolangs.org/wiki/Brainfuck
+*/
+
+/** @type LanguageFn */
+function brainfuck(hljs) {
+  const LITERAL = {
+    className: 'literal',
+    begin: /[+-]/,
+    relevance: 0
+  };
+  return {
+    name: 'Brainfuck',
+    aliases: ['bf'],
+    contains: [
+      hljs.COMMENT(
+        '[^\\[\\]\\.,\\+\\-<> \r\n]',
+        '[\\[\\]\\.,\\+\\-<> \r\n]',
+        {
+          returnEnd: true,
+          relevance: 0
+        }
+      ),
+      {
+        className: 'title',
+        begin: '[\\[\\]]',
+        relevance: 0
+      },
+      {
+        className: 'string',
+        begin: '[\\.,]',
+        relevance: 0
+      },
+      {
+        // this mode works as the only relevance counter
+        begin: /(?:\+\+|--)/,
+        contains: [LITERAL]
+      },
+      LITERAL
+    ]
+  };
+}
+
+module.exports = brainfuck;
+
+
+/***/ })
+
+}]);
+//# sourceMappingURL=brainfuck.js.map?v=75e287d4233aeaf84bb3

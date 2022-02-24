@@ -1,2 +1,79 @@
-(self.webpackChunktext=self.webpackChunktext||[]).push([["highlight/nix"],{88170:e=>{e.exports=function(e){const n={keyword:"rec with let in inherit assert if else then",literal:"true false or and null",built_in:"import abort baseNameOf dirOf isNull builtins map removeAttrs throw toString derivation"},t={className:"subst",begin:/\$\{/,end:/\}/,keywords:n},i={className:"string",contains:[t],variants:[{begin:"''",end:"''"},{begin:'"',end:'"'}]},s=[e.NUMBER_MODE,e.HASH_COMMENT_MODE,e.C_BLOCK_COMMENT_MODE,i,{begin:/[a-zA-Z0-9-_]+(\s*=)/,returnBegin:!0,relevance:0,contains:[{className:"attr",begin:/\S+/}]}];return t.contains=s,{name:"Nix",aliases:["nixos"],keywords:n,contains:s}}}}]);
-//# sourceMappingURL=nix.js.map?v=35bb9d51dc0be8b0f8a1
+(self["webpackChunktext"] = self["webpackChunktext"] || []).push([["highlight/nix"],{
+
+/***/ "./node_modules/highlight.js/lib/languages/nix.js":
+/*!********************************************************!*\
+  !*** ./node_modules/highlight.js/lib/languages/nix.js ***!
+  \********************************************************/
+/***/ ((module) => {
+
+/*
+Language: Nix
+Author: Domen Kožar <domen@dev.si>
+Description: Nix functional language
+Website: http://nixos.org/nix
+*/
+
+function nix(hljs) {
+  const NIX_KEYWORDS = {
+    keyword:
+      'rec with let in inherit assert if else then',
+    literal:
+      'true false or and null',
+    built_in:
+      'import abort baseNameOf dirOf isNull builtins map removeAttrs throw ' +
+      'toString derivation'
+  };
+  const ANTIQUOTE = {
+    className: 'subst',
+    begin: /\$\{/,
+    end: /\}/,
+    keywords: NIX_KEYWORDS
+  };
+  const ATTRS = {
+    begin: /[a-zA-Z0-9-_]+(\s*=)/,
+    returnBegin: true,
+    relevance: 0,
+    contains: [
+      {
+        className: 'attr',
+        begin: /\S+/
+      }
+    ]
+  };
+  const STRING = {
+    className: 'string',
+    contains: [ ANTIQUOTE ],
+    variants: [
+      {
+        begin: "''",
+        end: "''"
+      },
+      {
+        begin: '"',
+        end: '"'
+      }
+    ]
+  };
+  const EXPRESSIONS = [
+    hljs.NUMBER_MODE,
+    hljs.HASH_COMMENT_MODE,
+    hljs.C_BLOCK_COMMENT_MODE,
+    STRING,
+    ATTRS
+  ];
+  ANTIQUOTE.contains = EXPRESSIONS;
+  return {
+    name: 'Nix',
+    aliases: [ "nixos" ],
+    keywords: NIX_KEYWORDS,
+    contains: EXPRESSIONS
+  };
+}
+
+module.exports = nix;
+
+
+/***/ })
+
+}]);
+//# sourceMappingURL=nix.js.map?v=9ce6fe01904508e574a8

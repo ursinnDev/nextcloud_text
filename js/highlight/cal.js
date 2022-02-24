@@ -1,2 +1,118 @@
-(self.webpackChunktext=self.webpackChunktext||[]).push([["highlight/cal"],{45041:e=>{e.exports=function(e){const n="div mod in and or not xor asserterror begin case do downto else end exit for if of repeat then to until while with var",a=[e.C_LINE_COMMENT_MODE,e.COMMENT(/\{/,/\}/,{relevance:0}),e.COMMENT(/\(\*/,/\*\)/,{relevance:10})],s={className:"string",begin:/'/,end:/'/,contains:[{begin:/''/}]},r={className:"string",begin:/(#\d+)+/},t={className:"function",beginKeywords:"procedure",end:/[:;]/,keywords:"procedure|10",contains:[e.TITLE_MODE,{className:"params",begin:/\(/,end:/\)/,keywords:n,contains:[s,r]}].concat(a)},i={className:"class",begin:"OBJECT (Table|Form|Report|Dataport|Codeunit|XMLport|MenuSuite|Page|Query) (\\d+) ([^\\r\\n]+)",returnBegin:!0,contains:[e.TITLE_MODE,t]};return{name:"C/AL",case_insensitive:!0,keywords:{keyword:n,literal:"false true"},illegal:/\/\*/,contains:[s,r,{className:"number",begin:"\\b\\d+(\\.\\d+)?(DT|D|T)",relevance:0},{className:"string",begin:'"',end:'"'},e.NUMBER_MODE,i,t]}}}}]);
-//# sourceMappingURL=cal.js.map?v=b66862ce016e6f91ca9e
+(self["webpackChunktext"] = self["webpackChunktext"] || []).push([["highlight/cal"],{
+
+/***/ "./node_modules/highlight.js/lib/languages/cal.js":
+/*!********************************************************!*\
+  !*** ./node_modules/highlight.js/lib/languages/cal.js ***!
+  \********************************************************/
+/***/ ((module) => {
+
+/*
+Language: C/AL
+Author: Kenneth Fuglsang Christensen <kfuglsang@gmail.com>
+Description: Provides highlighting of Microsoft Dynamics NAV C/AL code files
+Website: https://docs.microsoft.com/en-us/dynamics-nav/programming-in-c-al
+*/
+
+/** @type LanguageFn */
+function cal(hljs) {
+  const KEYWORDS =
+    'div mod in and or not xor asserterror begin case do downto else end exit for if of repeat then to ' +
+    'until while with var';
+  const LITERALS = 'false true';
+  const COMMENT_MODES = [
+    hljs.C_LINE_COMMENT_MODE,
+    hljs.COMMENT(
+      /\{/,
+      /\}/,
+      {
+        relevance: 0
+      }
+    ),
+    hljs.COMMENT(
+      /\(\*/,
+      /\*\)/,
+      {
+        relevance: 10
+      }
+    )
+  ];
+  const STRING = {
+    className: 'string',
+    begin: /'/,
+    end: /'/,
+    contains: [{
+      begin: /''/
+    }]
+  };
+  const CHAR_STRING = {
+    className: 'string',
+    begin: /(#\d+)+/
+  };
+  const DATE = {
+    className: 'number',
+    begin: '\\b\\d+(\\.\\d+)?(DT|D|T)',
+    relevance: 0
+  };
+  const DBL_QUOTED_VARIABLE = {
+    className: 'string', // not a string technically but makes sense to be highlighted in the same style
+    begin: '"',
+    end: '"'
+  };
+
+  const PROCEDURE = {
+    className: 'function',
+    beginKeywords: 'procedure',
+    end: /[:;]/,
+    keywords: 'procedure|10',
+    contains: [
+      hljs.TITLE_MODE,
+      {
+        className: 'params',
+        begin: /\(/,
+        end: /\)/,
+        keywords: KEYWORDS,
+        contains: [
+          STRING,
+          CHAR_STRING
+        ]
+      }
+    ].concat(COMMENT_MODES)
+  };
+
+  const OBJECT = {
+    className: 'class',
+    begin: 'OBJECT (Table|Form|Report|Dataport|Codeunit|XMLport|MenuSuite|Page|Query) (\\d+) ([^\\r\\n]+)',
+    returnBegin: true,
+    contains: [
+      hljs.TITLE_MODE,
+      PROCEDURE
+    ]
+  };
+
+  return {
+    name: 'C/AL',
+    case_insensitive: true,
+    keywords: {
+      keyword: KEYWORDS,
+      literal: LITERALS
+    },
+    illegal: /\/\*/,
+    contains: [
+      STRING,
+      CHAR_STRING,
+      DATE,
+      DBL_QUOTED_VARIABLE,
+      hljs.NUMBER_MODE,
+      OBJECT,
+      PROCEDURE
+    ]
+  };
+}
+
+module.exports = cal;
+
+
+/***/ })
+
+}]);
+//# sourceMappingURL=cal.js.map?v=9c0d5f036c3cac7a7812
